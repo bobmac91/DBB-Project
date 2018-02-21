@@ -1,0 +1,26 @@
+// Standard Java API
+CreatePDS createPDS = new CreatePDS();
+createPDS.setDataset("USR1.BUILD.COBOL");
+createPDS.setOptions("cyl space(1,1) lrecl(80) dsorg(PO) recfm(F,B)");
+createPDS.execute();
+// Supports setter method chaining
+def createPDS = new CreatePDS().dataset("USR1.BUILD.COBOL").options("cyl space(1,1) lrecl(80) dsorg(PO) recfm(F,B)")
+createPDS.execute()
+Used to create a new PDS. Will skip creation if PDS already exists
+// or even
+new CreatePDS().dataset("USR1.BUILD.COBOL").options("cyl space(1,1) lrecl(80) dsorg(PO) recfm(F,B)").execute()
+// Create datasets needed for the build
+def properties = BuildProperties.getInstance()
+def srcOptions = "cyl space(1,1) lrecl(80) dsorg(PO) recfm(F,B) dsntype(library) msg(1)"
+def loadOptions = "cyl space(1,1) dsorg(PO) recfm(U) blksize(32760) dsntype(library) msg(1)"
+def srcDatasets = ["COBOL", "COPYBOOK", "OBJ", "BMS", "DBRM", "LINK", "MFS"]
+def loadDatasets = ["LOAD", "TFORMAT"]
+srcDatasets.each { dataset ->
+new CreatePDS().dataset("${properties.hlq}.$dataset").options(srcOptions).create()
+}
+loadDatasets.each { dataset ->
+new CreatePDS().dataset("${properties.hlq}.$dataset").options(loadOptions).create()
+}
+if (properties.errPrefix) {
+def xmlOptions = "tracks space(200,40) dsorg(PS) blksize(27998) lrecl(16383) recfm(v,b) new"
+new CreatePDS().dataset("${properties.hlq}.${properties.errPrefix}.SYSXMLSD.XML").options(xmlOptions).create()
