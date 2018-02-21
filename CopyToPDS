@@ -1,0 +1,10 @@
+// Standard Java API
+File file = new File("/u/usr1/build/helloworld.cbl");
+CopyToPDS copy = new CopyToPDS();
+copy.setFile(file);
+copy.setDataset("USR1.BUILD.COBOL");
+copy.setMember("HELLO");
+copy.execute();
+// Supports setter method chaining
+def copy = new CopyToPDS().file(new File("/u/usr1/build/helloworld.cbl")).dataset("USR1.BUILD.COBOL").member("HELLO")
+copy.execute()
