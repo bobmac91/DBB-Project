@@ -1,0 +1,22 @@
+// Example of passing the SYSLIN from the compiler to the Link-Editor
+def compile = new MVSExec().file(file).pgm("IGYCRCTL").parm(compileParms)
+compile.dd(new DDStatement().name("SYSIN").dsn("$cobolPDS($member)").options("shr"))
+compile.dd(new DDStatement().name("SYSLIN").dsn("&&TEMPOBJ").options(tempCreateOptions).pass(true))
+compile.dd(new DDStatement().name("SYSPRINT").options(tempCreateOptions))
+compile.dd(new DDStatement().name("SYSUT1").options(tempCreateOptions))
+. . .
+def linkedit = new MVSExec().file(file).pgm("IEWBLINK").parm("MAP,RENT,COMPAT(PM5)")
+linkedit.dd(new DDStatement().name("SYSLMOD").dsn("$loadPDS($member)").options("shr"))
+linkedit.dd(new DDStatement().name("SYSPRINT").options(tempCreateOptions))
+linkedit.dd(new DDStatement().name("SYSUT1").options(tempCreateOptions))
+linkedit.dd(new DDStatement().name("SYSLIB").dsn(objectPDS).options("shr"))
+// Usage #1 : use start() and stop() to set the boundaries of the passed DD statements
+def job = MVSJob()
+job.start()
+def rc = compile.execute()
+if (rc <= 4) {
+rc = linkedit.execute()
+}
+job.stop()
+// Usage #2 : Add MVSExec commands to the MVSJob and then execute with a maxRC
+def rc = new MVSJob().executable(compile).executable(linkedit).maxRC(8).execute()
