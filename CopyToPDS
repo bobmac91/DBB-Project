@@ -8,3 +8,13 @@ copy.execute();
 // Supports setter method chaining
 def copy = new CopyToPDS().file(new File("/u/usr1/build/helloworld.cbl")).dataset("USR1.BUILD.COBOL").member("HELLO")
 copy.execute()
+// copy source from zFS to PDS
+def cobolPDS = "${properties.hlq}.COBOL"
+def copybookPDS = "${properties.hlq}.COPYBOOK"
+def member = CopyToPDS.createMemberName(file)
+println("Copying ${properties.sourceDir}/$file to $cobolPDS($member)")
+new CopyToPDS().file(new File("${properties.sourceDir}/$file")).dataset(cobolPDS).member(member).execute()
+println("Resolving dependencies for file $file and copying to $copybookPDS")
+def resolver = tools.getDefaultDependencyResolver(file)
+def deps = resolver.resolve()
+new CopyToPDS().dependencies(deps).dataset(copybookPDS).execute()
